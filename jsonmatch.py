@@ -23,19 +23,19 @@ class Matcher:
         Some explanation
         
         """
-        self.query_arr = None
-        self.corpus_arr = None
+        self.query_json = None
+        self.corpus_json = None
         self.tokenizer = tokenizer
         self.stemmer = stemmer
         self.stop_words = stop_words
         self.query_vocabulary = []
         self.corpus_vocabulary = []
-        self.corpus_arr = []
-        self.query_arr = self._extract_arr(input_type, query)
-        self.corpus_arr = self._extract_arr(input_type, corpus)
+        
+        self.query_json = self._load_json(input_type, query)
+        self.corpus_json = self._load_json(input_type, corpus)
 
     @staticmethod
-    def _extract_arr(input_type, object):
+    def _load_json(input_type, object):
         """Some explanation"""
         json_object = None
         if input_type == "filename":
@@ -49,10 +49,48 @@ class Matcher:
         #If not already a list, turn into a list.
         if not isinstance(json_object, types.ListType):
             json_object = list(json_object)
-        print json_object
-        return [[[json_object[i][k]]
-                for k in json_object[i].keys()]
-                for i in range(len(json_object))]
+        return json_object
+                
+    @staticmethod
+    def separate_by_key(json_object):
+        """Creates a dict merging words across all objects
+        that are under the same key.
+        
+        Json object should be of the form:
+        [ {key1:val1, key2:val2, ...}, {}, {}, ...]
+        
+        Output is a dict of the form:
+        {key1:[val1, ...], key2:[val2, ...]}
+        
+        """
+        result = {}
+        for i in range(len(json_object)):
+            for key in json_object[i].keys():
+                if result.has_key(key):
+                    result[key].extend(json_object[i][key].split())
+                else:
+                    result[key] = [w for w in json_object[i][key].split()]
+        return result
+        
+    @staticmethod
+    def separate_by_object(json_object):
+        """Creates a list merging all words in an object,
+        ignoring keys.
+        
+        Json object should be of the form:
+        [ {key1:val, key2:val2, ...}, {}, {}, ...]
+        
+        Output is of the form:
+        [ [val1, val2, ...], [...], ...]
+        
+        """
+        res_arr = []
+        for i in range(len(json_object)):
+            temp = []
+            for key in json_object[i].keys():
+                temp.extend((json_object[i][key]).split())
+            res_arr.append(temp)
+        return res_arr
     
     @staticmethod
     def _remove_special_chars(str):
@@ -64,14 +102,14 @@ class Matcher:
         """Accepts a single string."""
         return str.lower()
     
-    def _tokenize(self, str):
-        """Accepts a single string."""
-        return self.tokenizer(str)
-    
     @staticmethod
     def _remove_duplicates(lst):
         """Accepts a list."""
         return list(set(lst))
+    
+    def _tokenize(self, str):
+        """Accepts a single string."""
+        return self.tokenizer(str)
         
     def _remove_stop_words(self, input):
         """Accepts a list."""
