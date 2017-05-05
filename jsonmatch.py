@@ -81,7 +81,8 @@ class Matcher:
                     for key, val in input[i].iteritems()}
                     for i in range(len(input))]
         else:
-            print "Error: input must be a list or dict."
+            print ("Error: input must be a list or dict of lists. "
+                   "Try tokenizing the strings.")
             
     def merge_words(self, input):
         """Accepts a json objet or list of json objects and
@@ -176,33 +177,40 @@ class Matcher:
             print "Error: input must be a string, list, or dict."
     
     def remove_duplicates(self, input):
-        """Removes duplicates from iterable structures.
-        Accepts a list or dict.
+        """Removes duplicate tokens from iterable structures.
+        Accepts a list or dict of lists.
         """
         if isinstance(input, list) and input:
-            if isinstance(input[0], list):
+            #List of iterables.
+            if isinstance(input[0], (list, dict)):
                 return [self.remove_duplicates(input[i])
                         for i in range(len(input))]
+            #Simple list.
             else:
                 return list(set(input))
         elif isinstance(input, dict):
+            #Dict of lists.
             return {key: self.remove_duplicates(val)
                     for key, val in input.iteritems()}
         else:
-            print "Error: input must be a list or dict of lists."
+            print ("Error: input must be a list or dict of lists. "
+                   "Try tokenizing the strings.")
         
     def remove_stop_words(self, input):
         """Removes common words from iterable structures.
-        Accepts a list or dict.
+        Accepts a list or dict of lists.
         """
         if isinstance(input, list) and input:
-            if isinstance(input[0], list):
+            #List of iterables.
+            if isinstance(input[0], (list, dict)):
                 return [self.remove_stop_words(input[i])
                         for i in range(len(input))]
+            #Simple list.
             else:
                 return [word for word in input
                         if word not in self.stop_words]
         elif isinstance(input, dict):
+            #Dict of lists.
             return {key: self.remove_stop_words(val)
                     for key, val in input.iteritems()}
         else:
@@ -257,7 +265,6 @@ class Matcher:
                 entry.append(len(val_q))
                 entry.append(len(val_c))
                 entry.append(len([w for w in val_q if w in set(val_c)]))
-                ###TODO: cosine similarity
                 entry.append(self.cos_sim(val_q, objectc,
                                           objectc_i, key_c))
                 matches.append(entry)
