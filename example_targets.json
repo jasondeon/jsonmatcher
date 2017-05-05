@@ -1,10 +1,11 @@
 [
     {
-        "key1" : "The big red dog",
-        "key2" : "The small blue cat"
+        "key1" : "The game of life is a game of everlasting learning",
+        "key2" : "The unexamined life is not worth living",
+        "key3" : "Never stop learning"
     },
     {
-        "key1" : "The big red horse",
-        "key3" : "Here I repeat repeat repeat"
+        "key4" : "Some else entirely",
+        "key5" : "Here I repeat repeat repeat"
     }
 ]

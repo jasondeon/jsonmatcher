@@ -36,11 +36,8 @@ class Matcher:
         self.tokenizer = tokenizer
         self.stemmer = stemmer
         self.stop_words = stop_words
-        self.query_vocabulary = []
-        self.corpus_vocabulary = []
     
-    @staticmethod
-    def _load_json(input_type, object):
+    def _load_json(self, input_type, object):
         """Loads json contents into a python list or dict.
         If it's a dict, inserts into a list, so it always
         returns a list.
@@ -56,19 +53,50 @@ class Matcher:
             sys.exit("Bad input type")
         #If not already a list, turn into a list.
         if not isinstance(json_object, list):
-            json_object = list(json_object)
-        return json_object
+            lst = []
+            lst.append(json_object.copy())
+            return self.to_lowercase(lst)
+        else:
+            return self.to_lowercase(json_object)
         
-    def separate_by_word(self, json_object):
-        """Creates a new dict from the json object, splitting
-        the strings into words.
-        """
-        result = json_object
-        for i in range(len(json_object)):
-            for key in json_object[i].keys():
-                result[i][key] = self.tokenizer(result[i][key])
-        return result
+    def get_query(self):
+        """Returns the query json object."""
+        return self.query_json
+        
+    def get_corpus(self):
+        """Returns the corpus json object."""
+        return self.corpus_json
     
+    def separate_by_word(self, input):
+        """Accepts a json object or list of json objects and
+        creates a new list where the string values are tokenized.
+        """
+        #Single json object.
+        if isinstance(input, dict):
+            return {key: self.tokenizer(val)
+                for key, val in input.iteritems()}
+        #List of json objects.
+        elif isinstance(input, list):
+            return [{key: self.tokenizer(val)
+                    for key, val in input[i].iteritems()}
+                    for i in range(len(input))]
+        else:
+            print "Error: input must be a list or dict."
+            
+    def merge_words(self, input):
+        """Accepts a json objet or list of json objects and
+        creates a new list where tokens are merged into sentences.
+        """
+        #Single json object.
+        if isinstance(input, dict):
+            return {key: " ".join(val)
+                    for key, val in input.iteritems()}
+        #List of json objects.
+        elif isinstance(input, list):
+            return [{key: " ".join(val)
+                    for key, val in input[i].iteritems()}
+                    for i in range(len(input))]
+
     def separate_by_key(self, json_object):
         """Creates a dict merging words across all objects
         that are under the same key.
@@ -105,6 +133,18 @@ class Matcher:
                 temp.extend(self.tokenizer(json_object[i][key]))
             result.append(temp)
         return result
+        
+    def get_all_words(self, json_object):
+        """Creates a list of all words across all objects and keys."""
+        result = []
+        #Make sure to check if already tokenized.
+        for i in range(len(json_object)):
+            for key in json_object[i].keys():
+                if len(json_object[i][key]) > 1:
+                    result.extend(json_object[i][key])
+                else:
+                    result.extend(self.tokenizer(json_object[i][key]))
+        return result
     
     def remove_special_chars(self, input):
         """Accepts a single string, list, or dict. Iterables may
@@ -137,7 +177,7 @@ class Matcher:
     
     def remove_duplicates(self, input):
         """Removes duplicates from iterable structures.
-        Accepts a list or dict of lists.
+        Accepts a list or dict.
         """
         if isinstance(input, list) and input:
             if isinstance(input[0], list):
@@ -153,7 +193,7 @@ class Matcher:
         
     def remove_stop_words(self, input):
         """Removes common words from iterable structures.
-        Accepts a list or dict of lists.
+        Accepts a list or dict.
         """
         if isinstance(input, list) and input:
             if isinstance(input[0], list):
@@ -170,7 +210,7 @@ class Matcher:
                     
     def stem_tokens(self, input):
         """Converts all strings in an interable structure
-        to their stem form. Accepts a list or dict of lists.
+        to their stem form. Accepts a list or dict.
         """
         if isinstance(input, list) and input:
             if isinstance(input[0], list):
@@ -184,46 +224,59 @@ class Matcher:
         else:
             print "Error: input must be a list or dict of lists."
 
-    def match(self, n, m):
-        """Generates a list of attribute pairings, with each
-        sublist containing the following entries:
+    def match(self, objectq=None, objectc=None,
+              objectq_i=None, objectc_i=None):
+        """Generates a list of all possible attribute pairings,
+        with each sublist containing the following entries:
         [
-            obj1.attribute_i,
-            obj2.attribute_k,
-            obj1.attribute_i.len,
-            ob2.attribute_k.len,
-            # of overlapping words,
-            cosine similarity
+            objectq.attribute_i key,
+            objectc.attribute_k key,
+            objectq.attribute_i length,
+            objectc.attribute_k length,
+            # of overlapping words (not including duplicates),
+            cosine similarity compared to all objects in objectc
         ]
-        Uses the query and corpus lists contained in the instance.
-        n refers to the index of the query object of interest.
-        m refers to the index of the corpus object of interest.
-        The objects are expected to be simple key:value pair dicts.
+        Accepts single json objects or lists of json objects.
+        By default, uses the query and corpus json objects
+        belonging to the instance of the object.
+        objectq_i, objectc_i are the indices of the objects of interest
+        for objectq and objectc if they contain a list of json objects.
         """
+        #If objects aren't supplied, use defaults.
+        if objectq is None:
+            objectq = self.separate_by_word(self.query_json)
+        if objectc is None:
+            objectc = self.separate_by_word(self.corpus_json)
+        #Determine the matching results.
         matches = []
-        query_tokens = self.separate_by_word(self.query_json)
-        corpus_tokens = self.separate_by_word(self.corpus_json)
-        for key_q, val_q in self.query_json[n]:
-            for key_c, val_c in self.corpus_json[m]:
+        for key_q, val_q in objectq[objectq_i].iteritems():
+            for key_c, val_c in objectc[objectc_i].iteritems():
                 entry = []
                 entry.append(key_q)
                 entry.append(key_c)
                 entry.append(len(val_q))
                 entry.append(len(val_c))
-                ###TODO: # of matches, cosine similarity
-            
-    def word_count_all(self, key):
-        """Returns a dictionary containing word counts for
-        all in every object and under every key.
+                entry.append(len([w for w in val_q if w in set(val_c)]))
+                ###TODO: cosine similarity
+                entry.append(self.cos_sim(val_q, objectc,
+                                          objectc_i, key_c))
+                matches.append(entry)
+        return matches
+        
+    def cos_sim(self, query, corpus_tokens,
+                corpus_i, corpus_key):
+        """Determines the cosine similarity using two json objects.
+        query is a list containing the words of the query.
+        corpus_tokens is a list of json objects in the corpus.
+        corpus_i is the index of the json object to be compared to.
+        corpus_key is the key of the value of interest in the corpus.
         """
+        corpus = self.merge_words(corpus_tokens)
+        corpus_arr = corpus[corpus_i].values()
+        vect = TfidfVectorizer(sublinear_tf=True, vocabulary=query)
+        transformed = vect.fit_transform(corpus_arr)
+        cos_matrix = (transformed * transformed.T).A
+        cos_list = cos_matrix[len(cos_matrix) - 1]
+        index = corpus[corpus_i].keys().index(corpus_key)
+        return cos_list[index]
         
-        
-#c_vect = CountVectorizer(vocabulary=query_vocabulary[3])
-#print c_vect.fit_transform(corpus_arr[1]).toarray()
-
-###TfIdf for description key
-###vocabulary=the text that you want to analyze e.g. a query
-#vect = TfidfVectorizer(sublinear_tf=True, vocabulary=query_vocabulary[3], stop_words=stopwords.words('english'))
-#transformed = vect.fit_transform(corpus_arr[1])
-#print dict(zip(vect.get_feature_names(), vect.idf_))
-#print (transformed * transformed.T).A
