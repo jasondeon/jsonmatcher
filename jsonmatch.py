@@ -10,6 +10,7 @@ import re
 from nltk import sent_tokenize, word_tokenize, PorterStemmer
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from autocorrect import spell
 
 
 class Matcher:
@@ -71,8 +72,10 @@ class Matcher:
         """Accepts a json object or list of json objects and
         creates a new list where the string values are tokenized.
         """
+        if not input or input is None:
+            return input
         #Single json object.
-        if isinstance(input, dict):
+        elif isinstance(input, dict):
             return {key: self.tokenizer(val)
                 for key, val in input.iteritems()}
         #List of json objects.
@@ -88,6 +91,8 @@ class Matcher:
         """Accepts a json objet or list of json objects and
         creates a new list where tokens are merged into sentences.
         """
+        if not input or input is None:
+            return input
         #Single json object.
         if isinstance(input, dict):
             return {key: " ".join(val)
@@ -180,7 +185,9 @@ class Matcher:
         """Removes duplicate tokens from iterable structures.
         Accepts a list or dict of lists.
         """
-        if isinstance(input, list) and input:
+        if not input or input is None:
+            return input
+        if isinstance(input, list):
             #List of iterables.
             if isinstance(input[0], (list, dict)):
                 return [self.remove_duplicates(input[i])
@@ -200,7 +207,9 @@ class Matcher:
         """Removes common words from iterable structures.
         Accepts a list or dict of lists.
         """
-        if isinstance(input, list) and input:
+        if not input or input is None:
+            return input
+        if isinstance(input, list):
             #List of iterables.
             if isinstance(input[0], (list, dict)):
                 return [self.remove_stop_words(input[i])
@@ -217,17 +226,44 @@ class Matcher:
             print "Error: input must be a list or dict of lists."
                     
     def stem_tokens(self, input):
-        """Converts all strings in an interable structure
+        """Converts all strings in an iterable structure
         to their stem form. Accepts a list or dict.
         """
-        if isinstance(input, list) and input:
-            if isinstance(input[0], list):
+        if not input or input is None:
+            return input
+        if isinstance(input, list):
+            #List of iterables.
+            if isinstance(input[0], (list, dict)):
                 return [self.stem_tokens(input[i])
                         for i in range(len(input))]
+            #Simple list.
             else:
                 return [self.stemmer(w) for w in input]
         elif isinstance(input, dict):
+            #Dict of lists.
             return {key: self.stem_tokens(val)
+                    for key, val in input.iteritems()}
+        else:
+            print "Error: input must be a list or dict of lists."
+            
+    def correct_spelling(self, input):
+        """Converts all strings in an iterable structure
+        to their closest correct spelling using a
+        spell-correcting model.
+        """
+        if not input or input is None:
+            return input
+        elif isinstance(input, list):
+            #List of iterables.
+            if isinstance(input[0], (list, dict)):
+                return [self.correct_spelling(input[i])
+                        for i in range(len(input))]
+            #Simple list.
+            else:
+                return [spell(w) for w in input]
+        elif isinstance(input, dict):
+            #Dict of lists.
+            return {key: self.correct_spelling(val)
                     for key, val in input.iteritems()}
         else:
             print "Error: input must be a list or dict of lists."
