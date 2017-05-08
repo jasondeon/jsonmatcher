@@ -30,3 +30,9 @@ with open("wikipedia.txt", "r") as file:
 print "Autocorrect: " + str(autocorrect_score / float(total_tests))
 print "Yuxinzhu: " + str(yux_score / float(total_tests))
 print "Norvig: " + str(norvig_score / float(total_tests))
+"""
+Results (% correct):
+Autocorrect: 0.648472505092
+Yuxinzhu: 0.193482688391
+Norvig: 0.566191446029
+"""
