@@ -1,9 +1,12 @@
 import re
 from collections import Counter
+from nltk.corpus import brown
 
 def words(text): return re.findall(r'\w+', text.lower())
 
-WORDS = Counter(words(open('big.txt').read()))
+WORDS = Counter(brown.words())
+WORDS.update(Counter(words(open('big.txt').read())))
+WORDS.update(Counter(words(open('english.txt').read())))
 
 def P(word, N=sum(WORDS.values())): 
     "Probability of `word`."

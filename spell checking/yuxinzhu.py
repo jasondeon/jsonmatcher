@@ -1,5 +1,6 @@
 from autocorrect.word_lists import LOWERCASE
 import os, itertools
+from nltk.corpus import brown
 
 VOWELS = "aoeiu"
 DEFAULT_DICTIONARY = "big.txt"
