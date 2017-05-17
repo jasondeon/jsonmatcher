@@ -1,0 +1,13 @@
+gensim_example.py
+This shows an entire example of text-matching using a small built-in corpus (a bunch of strings). It shows how to parse the corpus and create a dictionary, as well as create a TF-IDF model, create an LSI model, and use cosine similarity to compare a query to the corpus.
+
+-----------------------------
+
+gensim_readcorpus.py
+This shows how to read and save a dictionary and corpus, using the brown corpus from nltk.
+
+gensim_lsi_train.py
+Loads a pre-existing dictionary and corpus, trains an LSI model, and saves it to the disk.
+
+gensim_lsi_test.py
+Loads a pre-existing LSI model from the disk.
