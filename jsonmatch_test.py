@@ -3,6 +3,8 @@ from jsonmatch import Matcher
 
 matcher = Matcher(query="example_query.json",
                   corpus="example_targets.json")
+                  
+
 print "Query:"
 print matcher.query_json
 raw_input("Press Enter to continue ... ")
