@@ -88,7 +88,7 @@ class Matcher:
                    "Try tokenizing the strings.")
             
     def merge_words(self, input):
-        """Accepts a json objet or list of json objects and
+        """Accepts a json object or list of json objects and
         creates a new list where tokens are merged into sentences.
         """
         if not input or input is None:
@@ -265,6 +265,8 @@ class Matcher:
             #Dict of lists.
             return {key: self.correct_spelling(val)
                     for key, val in input.iteritems()}
+        elif isinstance (input, basestring):
+            return spell(input)
         else:
             print "Error: input must be a list or dict of lists."
 
