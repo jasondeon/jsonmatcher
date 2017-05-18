@@ -1,0 +1,9 @@
+doc_sim.py uses output.json as a corpus (this contains the example excel file Dr. Lingras provided). It uses the search query from test_query.json.
+
+doc_sim.py does the following:
+- text pre-processing using jsonmatcher library
+- uses gensim to make a TF-IDF and LSI model
+- uses sci-kit learn to do k-means clustering on corpus
+- uses gensim to compare the query to the corpus and return a list from best to worst result
+
+The "dims" variable at the top sets the number of topics to extract via LSI. This will also be the number of clusters to extract for k-means.
