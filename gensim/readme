@@ -1,13 +1,14 @@
+#Gensim
+Gensim is a library that implements TF-IDF, LSI and LDA models, cosine similarity, and more.
+
 gensim_example.py
 This shows an entire example of text-matching using a small built-in corpus (a bunch of strings). It shows how to parse the corpus and create a dictionary, as well as create a TF-IDF model, create an LSI model, and use cosine similarity to compare a query to the corpus.
 
------------------------------
-
 gensim_readcorpus.py
-This shows how to read and save a dictionary and corpus, using the brown corpus from nltk.
+Shows how to read and save a dictionary and corpus, using the brown corpus from the nltk library.
 
 gensim_lsi_train.py
-Loads a pre-existing dictionary and corpus, trains an LSI model, and saves it to the disk.
+Shows how to load a pre-existing dictionary and corpus, train an LSI model, and save it to the disk.
 
 gensim_lsi_test.py
-Loads a pre-existing LSI model from the disk.
+Shows how to load a pre-existing LSI model from the disk.
