@@ -1,4 +1,3 @@
-#Gensim
 Gensim is a library that implements TF-IDF, LSI and LDA models, cosine similarity, and more.
 
 gensim_example.py
