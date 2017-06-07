@@ -6,7 +6,10 @@ Depends on external libraries:
 scikit-learn
 
 """
+from collections import defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
+from gensim import corpora, models, similarities
+from jsonmatch.json_utils import merge_by_key
 from jsonmatch.nlp import untokenize_object
 
 def match(query, corpus, query_i=0, corpus_i=0):
@@ -60,9 +63,36 @@ def k_means():
     """Performs k-means clustering on the corpus."""
     pass
     
-def lsi_search(self, num_topics):
+def lsi_search(query, corpus_tokens, corpus_key, num_topics):
     """Extracts topics from the corpus and returns cosine
     similarities of the query against the corpus in the
     LSI space.
     """
-    pass
+    documents = merge_by_key(corpus_tokens)[corpus_key]
+
+    # Remove words that only appear once
+    frequency = defaultdict(int)
+    for text in documents:
+        for token in text:
+            frequency[token] += 1
+    documents = [[token for token in text if frequency[token] > 1] for text in documents]
+    
+    # Creating dictionary and corpus
+    dic = corpora.Dictionary(documents)
+    corpus = [dic.doc2bow(text) for text in documents]
+    
+    # Creating TF-IDF model
+    tfidf = models.TfidfModel(corpus)
+    corpus_tfidf = tfidf[corpus]
+    
+    # Creating LSI model
+    lsi = models.LsiModel(corpus=corpus_tfidf, id2word=dic, num_topics=num_topics)
+    corpus_lsi = lsi[corpus_tfidf]
+    
+    # Searching on query
+    vec_bow = dic.doc2bow(query)
+    vec_lsi = lsi[vec_bow] # contains the query-topic cosine similarity
+    index = similarities.MatrixSimilarity(lsi[corpus])
+    sims = index[vec_lsi]
+    sims = sorted(enumerate(sims), key=lambda item: -item[1])
+    return sims
