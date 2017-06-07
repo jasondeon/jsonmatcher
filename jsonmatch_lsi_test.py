@@ -2,7 +2,7 @@
 import jsonmatch as js
 from getpass import getpass
 
-#Read sql tables
+## Read sql tables ##
 username = raw_input("Enter your mysql username: ")
 password = getpass()
 dbname = raw_input("Enter the name of the database: ")
@@ -15,12 +15,9 @@ query = {
         "INDICATOR": "",
         "TYPE": ""
     }
-
 matcher = js.Matcher(input_type="object", query=query, corpus=corpus)
-c_index = 16
 
 ## Handling the query ##
-
 #query_json holds all the queries (just 1 in this case)
 print "\nQuery:"
 for dict in matcher.query_json:
@@ -31,65 +28,54 @@ print
 
 print "Tokenizing query." #Using the matcher's default tokenizing function
 q_tokens = js.nlp.tokenize_object(matcher.query_json, matcher.tokenizer)
+
 for dict in q_tokens:
     for key,val in dict.iteritems():
         print key,": ",val
 raw_input("Press Enter to continue ... ")
 print
 
-print "Correcting spelling." #Using the matcher's default autocorrector
-q_spell = js.nlp.correct_spelling(q_tokens, matcher.speller)
-for dict in q_spell:
-    for key,val in dict.iteritems():
-        print key,": ",val
-raw_input("Press Enter to continue ... ")
-print
-
+#To lowercase
+q_tokens = js.nlp.to_lowercase(q_tokens)
 #Removing stopwords (using the matcher's default set of words)
-q_nostop = js.nlp.remove_stop_words(q_spell, matcher.stop_words)
-
+q_tokens = js.nlp.remove_stop_words(q_tokens, matcher.stop_words)
+#Removing punctuation
+q_tokens = js.nlp.remove_special_chars(q_tokens)
 #Removing duplicates
-q_nodupes = js.nlp.remove_duplicates(q_nostop)
-
+q_tokens = js.nlp.remove_duplicates(q_tokens)
 #Stemming words (using the matcher's default stemming function)
-q_stem = js.nlp.stem_tokens(q_nodupes, matcher.stemmer)
+#q_tokens = js.nlp.stem_tokens(q_tokens, matcher.stemmer)
 
 ## Handling the corpus ##
-
 #corpus_json holds all the search documents
-#c_index is referring to a specific document
 print "Corpus:"
-for k,v in matcher.corpus_json[c_index].iteritems():
+for k,v in matcher.corpus_json[16].iteritems():
     print k,": ",v
 raw_input("Press Enter to continue ... ")
 print
 
 print "Tokenizing corpus."
 c_tokens = js.nlp.tokenize_object(matcher.corpus_json, matcher.tokenizer)
-for k,v in c_tokens[c_index].iteritems():
+
+for k,v in c_tokens[16].iteritems():
     print k,": ",v
 raw_input("Press Enter to continue ... ")
 print
 
-print "Correcting spelling."
-c_spell = js.nlp.correct_spelling(c_tokens, matcher.speller)
-for k,v in c_spell[c_index].iteritems():
-    print k,": ",v
-raw_input("Press Enter to continue ... ")
-print
-
+#To lowercase
+c_tokens = js.nlp.to_lowercase(c_tokens)
 #Removing stopwords
-c_nostop = js.nlp.remove_stop_words(c_spell, matcher.stop_words)
-
+c_tokens = js.nlp.remove_stop_words(c_tokens, matcher.stop_words)
+#Removing punctuation
+c_tokens = js.nlp.remove_special_chars(c_tokens)
 #Stemming words
-c_stem = js.nlp.stem_tokens(c_nostop, matcher.stemmer)
+#c_tokens = js.nlp.stem_tokens(c_tokens, matcher.stemmer)
 
-#This function requires the query and corpus lists, plus the indices
-#of the objects you want to compare in those lists
-match_matrix = js.mine.match(query=q_stem, corpus=c_stem,
-                             query_i=0, corpus_i=c_index)
-print "Here is the results of the matching:"
-for entry in match_matrix:
-    if entry[0] == entry[1]: #Here I only look at entries with matching keys
-        print entry
+## LSI search ##
+sims = js.mine.lsi_search(q_tokens[0]["DESCRIPTION"],
+                          c_tokens, "DESCRIPTION", 5)
+print "\nSearch results (best to worst cosine similarity):"
+for s in sims:
+    print s, "#", " ".join(c_tokens[s[0]]["INDICATOR"])
+raw_input("Press Enter to continue ... ")
 print
