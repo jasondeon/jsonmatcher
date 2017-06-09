@@ -3,10 +3,6 @@
 General text mining functions for json files.
 Python 2.7+
 
-Depends on external libraries:
-nltk
-autocorrect
-
 """
 
 import json
