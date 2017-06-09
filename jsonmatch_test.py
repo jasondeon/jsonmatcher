@@ -3,12 +3,22 @@ import jsonmatch as js
 from getpass import getpass
 
 #Read sql tables
-username = raw_input("Enter your mysql username: ")
-password = getpass()
-dbname = raw_input("Enter the name of the database: ")
-table_name = raw_input("Enter the name of the table: ")
+ssh_host = raw_input("Enter the name of the host: ")
+ssh_username = raw_input("Enter your username for {}: ".format(ssh_host))
+ssh_password = getpass()
+sql_username = raw_input("Enter your mysql username: ")
+sql_password = getpass()
+db_name = raw_input("Enter the name of the database: ")
+table_name = raw_input("Enter the name of the table to search on: ")
 
-corpus = js.dbase.read_table(username, password, "127.0.0.1", dbname, table_name)
+corpus = js.dbase.read_table(
+    ssh_host=ssh_host,
+    ssh_username=ssh_username,
+    ssh_password=ssh_password,
+    sql_username=sql_username,
+    sql_password=sql_password,
+    db_name=db_name,
+    table_name=table_name)
 query = {
         "DESCRIPTION": "staff satisfaction",
         "SOURCE": "",
