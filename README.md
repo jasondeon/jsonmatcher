@@ -1,7 +1,7 @@
 # jsonmatcher
 Python (ver. 2.7) library for matching json objects using text mining
 
-External dependencies:
+## External Libraries:
 
 * [nltk](http://www.nltk.org/)
 * [autocorrect](https://pypi.python.org/pypi/autocorrect/0.3.0)
