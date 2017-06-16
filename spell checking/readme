@@ -1,8 +1,0 @@
-This folder contains various spell-correcting libraries.
-
-Using random sample of test data from wikipedia.txt
-
-Autocorrect: 1282/1928 66.4937759336%
-Yuxinzhu: 392/1928 20.3319502075%
-Norvig: 1228/1928 63.6929460581%
-Hybrid: 1313/1928 68.101659751%
