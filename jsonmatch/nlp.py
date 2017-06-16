@@ -4,6 +4,7 @@ jsonmatch.nlp
 
 """
 import re
+import autocomplete
 
 def tokenize_object(input, tokenizer):
     """Accepts a list of json objects and returns a new list
@@ -149,6 +150,18 @@ def correct_spelling(input, speller):
         print ("Error: input must be a simple list or a "
             "list/dict of lists.")
             
+def suggest_word(previous, current):
+    """Given the previous word and the current partially typed
+    word, suggest some possibilities for the word being typed.
+    Returns a list of tuples containing the suggested word and
+    the number of times it showed up as a followup in the training
+    corpus.
+    """
+    if not suggest_word.is_loaded: #Don't train more than once
+        autocomplete.load()
+        suggest_word.is_loaded = True
+    return autocomplete.predict(previous, current)
+            
 def stem_tokens(input, stemmer):
     """Converts all strings in an iterable structure
     to their stem form.
@@ -172,3 +185,5 @@ def stem_tokens(input, stemmer):
     else:
         print ("Error: input must be a simple list or a "
             "list/dict of lists.")
+            
+suggest_word.is_loaded = False
